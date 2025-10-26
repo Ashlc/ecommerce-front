@@ -1,0 +1,12 @@
+import DefaultLayout from "./layouts/default";
+import { Provider } from "./provider";
+
+function App() {
+  return (
+    <Provider>
+      <DefaultLayout />
+    </Provider>
+  );
+}
+
+export default App;
