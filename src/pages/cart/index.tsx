@@ -69,7 +69,7 @@ const CartPage = () => {
     navigate("/checkout");
   };
   return (
-    <div className="flex flex-col lg:flex-row gap-8 p-8 bg-default-100 dark:bg-default-50/60 md:h-[calc(100vh-65px)]">
+    <div className="flex flex-col lg:flex-row gap-8 p-8 bg-default-100 dark:bg-default-50/50 md:h-[calc(100vh-65px)]">
       <div className="relative container basis-2/3">
         <ScrollShadow
           className="max-sm:overflow-visible lg:px-4 relative h-full"
@@ -108,7 +108,7 @@ const CartPage = () => {
           <CaretUpIcon size={20} />
         </Button>
       </div>
-      <Card className="basis-1/3 h-fit">
+      <Card className="basis-1/3">
         <CardHeader className="flex flex-row gap-2 p-4 items-center">
           <ReceiptIcon
             size={32}

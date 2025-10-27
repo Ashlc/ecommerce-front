@@ -1,3 +1,4 @@
+import { Divider } from "@heroui/divider";
 import { Input } from "@heroui/input";
 import { Link } from "@heroui/link";
 import {
@@ -9,10 +10,15 @@ import {
   NavbarMenuItem,
   NavbarMenuToggle,
 } from "@heroui/navbar";
-import { MagnifyingGlassIcon, ShoppingCartIcon } from "@phosphor-icons/react";
+import {
+  MagnifyingGlassIcon,
+  ShoppingCartIcon,
+  UserIcon,
+} from "@phosphor-icons/react";
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import { siteConfig } from "@/config/site";
+import { Button } from "@heroui/button";
 import Cart from "./cart";
 
 export const Navbar = () => {
@@ -52,8 +58,12 @@ export const Navbar = () => {
       </NavbarContent>
 
       <NavbarContent justify="end">
-        <NavbarItem className="hidden md:flex gap-4">
-          <Cart quantity={3} />
+        <NavbarItem className="hidden items-center md:flex gap-4">
+          <Button variant="light" isIconOnly size="sm" radius="full">
+            <UserIcon className="w-5 h-5" />
+          </Button>
+          <Cart />
+          <Divider orientation="vertical" className="h-6" />
           <ThemeSwitch />
         </NavbarItem>
       </NavbarContent>

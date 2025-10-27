@@ -1,32 +1,38 @@
 import PageTitle from "@/components/page-title";
-import { cart } from "@/services/mock";
-import { Button } from "@heroui/button";
+import { useCart } from "@/hooks/useCart";
+import api from "@/services/api";
+import { PaymentMethod } from "@/types";
+import { Button, ButtonGroup } from "@heroui/button";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Input } from "@heroui/input";
 import {
   CreditCardIcon,
   InvoiceIcon,
+  MapPinIcon,
   ReceiptIcon,
-  UserIcon,
 } from "@phosphor-icons/react";
+import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import InputMask from "react-input-mask";
 import { useNavigate } from "react-router-dom";
 
 type CheckoutFormValues = {
-  fullName: string;
-  email: string;
-  address: string;
+  street: string;
+  district: string;
+  number: string;
   city: string;
+  state: string;
   zipCode: string;
-  cardNumber: string;
-  expiryDate: string;
-  cvv: string;
+  cardNumber?: string;
+  expiryDate?: string;
+  cvv?: string;
 };
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
+  const { cart, refetchCart, userId } = useCart();
+  const [method, setMethod] = useState<PaymentMethod>("credit_card");
   const [total, setTotal] = useState({
     productTotal: 0,
     taxes: 0,
@@ -37,7 +43,7 @@ const CheckoutPage = () => {
   useEffect(() => {
     const calculateTotal = () => {
       const productTotal = cart.reduce(
-        (sum, item) => sum + item.price * (item.cartedQuantity || 1),
+        (sum, item) => sum + item.product.price * (item.quantity || 1),
         0,
       );
       const taxes = productTotal * 0.07;
@@ -51,14 +57,15 @@ const CheckoutPage = () => {
       });
     };
     calculateTotal();
-  }, []);
+  }, [cart]);
 
   const { control, handleSubmit } = useForm<CheckoutFormValues>({
     defaultValues: {
-      fullName: "",
-      email: "",
-      address: "",
+      street: "",
+      district: "",
+      number: "",
       city: "",
+      state: "",
       zipCode: "",
       cardNumber: "",
       expiryDate: "",
@@ -66,74 +73,157 @@ const CheckoutPage = () => {
     },
   });
 
+  const { mutate: placeOrder, isPending } = useMutation({
+    mutationFn: async (data: CheckoutFormValues) => {
+      console.log("Placing order with data:", data);
+      await api.post("/orders/place", { userId, method });
+    },
+    onSuccess: () => {
+      refetchCart();
+    },
+  });
+
   const onSubmit: SubmitHandler<CheckoutFormValues> = (data) => {
-    console.log("Order submitted", data);
+    placeOrder(data);
     navigate("/");
+  };
+
+  const renderPaymentMethodFields = () => {
+    switch (method) {
+      case "credit_card":
+      case "debit_card":
+        return (
+          <>
+            <Controller
+              name="cardNumber"
+              control={control}
+              rules={{ required: "Card number is required" }}
+              render={({ field, fieldState }) => (
+                <InputMask
+                  mask="9999 9999 9999 9999"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                >
+                  {(inputProps: any) => (
+                    <Input
+                      {...inputProps}
+                      label="Card Number"
+                      labelPlacement="outside"
+                      placeholder="1234 5678 9012 3456"
+                      isInvalid={!!fieldState.error}
+                      errorMessage={fieldState.error?.message}
+                    />
+                  )}
+                </InputMask>
+              )}
+            />
+            <div className="flex flex-row gap-4">
+              <Controller
+                name="expiryDate"
+                control={control}
+                rules={{ required: "Expiry date is required" }}
+                render={({ field, fieldState }) => (
+                  <InputMask
+                    mask="99/99"
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                  >
+                    {(inputProps: any) => (
+                      <Input
+                        {...inputProps}
+                        label="Expiry Date"
+                        labelPlacement="outside"
+                        placeholder="MM/YY"
+                        isInvalid={!!fieldState.error}
+                        errorMessage={fieldState.error?.message}
+                      />
+                    )}
+                  </InputMask>
+                )}
+              />
+              <Controller
+                name="cvv"
+                control={control}
+                rules={{ required: "CVV is required" }}
+                render={({ field, fieldState }) => (
+                  <Input
+                    label="CVV"
+                    labelPlacement="outside"
+                    placeholder="123"
+                    type="password"
+                    {...field}
+                    isInvalid={!!fieldState.error}
+                    errorMessage={fieldState.error?.message}
+                  />
+                )}
+              />
+            </div>
+          </>
+        );
+      case "pix":
+        return (
+          <p className="mx-auto mt-2 mb-8">
+            Your PIX code will be generated after placing the order.
+          </p>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col lg:flex-row gap-8 p-8 bg-default-100 md:h-[calc(100vh-65px)]"
+      className="flex flex-col lg:flex-row gap-8 p-8 bg-default-100 dark:bg-default-50/50 md:min-h-[calc(100vh-65px)]"
     >
-      <div className="container basis-2/3">
+      <div className="container basis-1/2">
         <div className="flex flex-row gap-2">
           <PageTitle title="Checkout" icon={InvoiceIcon} backLink="/cart" />
         </div>
 
         <div className="flex flex-col gap-10">
-          {/* Customer Information */}
+          {/* Shipping Information */}
           <Card>
             <CardHeader className="flex flex-row gap-2 p-4 items-center">
-              <UserIcon size={20} className="text-primary-500" weight="bold" />
+              <MapPinIcon
+                size={20}
+                className="text-primary-500"
+                weight="bold"
+              />
               <h2 className="font-heading font-medium text-primary">
-                Customer Information
+                Shipping Information
               </h2>
             </CardHeader>
             <CardBody className="grid grid-cols-1 lg:grid-cols-4 gap-4 p-4">
               <Controller
-                name="fullName"
+                name="zipCode"
                 control={control}
-                rules={{ required: "Full name is required" }}
+                rules={{ required: "ZIP code is required" }}
                 render={({ field, fieldState }) => (
                   <Input
-                    label="Full Name"
-                    placeholder="John Doe"
+                    label="ZIP Code"
+                    placeholder="10001"
                     {...field}
                     isInvalid={!!fieldState.error}
                     errorMessage={fieldState.error?.message}
-                    className="col-span-2"
+                    className="col-span-3"
                   />
                 )}
               />
               <Controller
-                name="email"
+                name="state"
                 control={control}
-                rules={{ required: "Email is required" }}
+                rules={{ required: "State is required" }}
                 render={({ field, fieldState }) => (
                   <Input
-                    label="Email"
-                    type="email"
-                    placeholder="john@example.com"
+                    label="State"
+                    placeholder="NY"
                     {...field}
                     isInvalid={!!fieldState.error}
                     errorMessage={fieldState.error?.message}
-                    className="col-span-2"
-                  />
-                )}
-              />
-              <Controller
-                name="address"
-                control={control}
-                rules={{ required: "Address is required" }}
-                render={({ field, fieldState }) => (
-                  <Input
-                    label="Address"
-                    placeholder="123 Main St"
-                    {...field}
-                    isInvalid={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                    className="col-span-2"
+                    className="col-span-1"
                   />
                 )}
               />
@@ -148,18 +238,48 @@ const CheckoutPage = () => {
                     {...field}
                     isInvalid={!!fieldState.error}
                     errorMessage={fieldState.error?.message}
-                    className="col-span-1"
+                    className="col-span-2"
                   />
                 )}
               />
               <Controller
-                name="zipCode"
+                name="district"
                 control={control}
-                rules={{ required: "ZIP code is required" }}
+                rules={{ required: "District is required" }}
                 render={({ field, fieldState }) => (
                   <Input
-                    label="ZIP Code"
-                    placeholder="10001"
+                    label="District"
+                    placeholder="Downtown"
+                    {...field}
+                    isInvalid={!!fieldState.error}
+                    errorMessage={fieldState.error?.message}
+                    className="col-span-2"
+                  />
+                )}
+              />
+              <Controller
+                name="street"
+                control={control}
+                rules={{ required: "Street is required" }}
+                render={({ field, fieldState }) => (
+                  <Input
+                    label="Street"
+                    placeholder="123 Main St"
+                    {...field}
+                    isInvalid={!!fieldState.error}
+                    errorMessage={fieldState.error?.message}
+                    className="col-span-3"
+                  />
+                )}
+              />
+              <Controller
+                name="number"
+                control={control}
+                rules={{ required: "Number is required" }}
+                render={({ field, fieldState }) => (
+                  <Input
+                    label="Number"
+                    placeholder="123"
                     {...field}
                     isInvalid={!!fieldState.error}
                     errorMessage={fieldState.error?.message}
@@ -172,90 +292,48 @@ const CheckoutPage = () => {
 
           {/* Payment Information */}
           <Card>
-            <CardHeader className="flex flex-row gap-2 p-4 items-center">
-              <CreditCardIcon
-                size={20}
-                className="text-primary-500"
-                weight="bold"
-              />
-              <h2 className="font-heading font-medium text-primary">
-                Payment Information
-              </h2>
-            </CardHeader>
-            <CardBody className="gap-4">
-              <Controller
-                name="cardNumber"
-                control={control}
-                rules={{ required: "Card number is required" }}
-                render={({ field, fieldState }) => (
-                  <InputMask
-                    mask="9999 9999 9999 9999"
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                  >
-                    {(inputProps: any) => (
-                      <Input
-                        {...inputProps}
-                        label="Card Number"
-                        labelPlacement="outside"
-                        placeholder="1234 5678 9012 3456"
-                        isInvalid={!!fieldState.error}
-                        errorMessage={fieldState.error?.message}
-                      />
-                    )}
-                  </InputMask>
-                )}
-              />
-              <div className="flex flex-row gap-4">
-                <Controller
-                  name="expiryDate"
-                  control={control}
-                  rules={{ required: "Expiry date is required" }}
-                  render={({ field, fieldState }) => (
-                    <InputMask
-                      mask="99/99"
-                      value={field.value}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                    >
-                      {(inputProps: any) => (
-                        <Input
-                          {...inputProps}
-                          label="Expiry Date"
-                          labelPlacement="outside"
-                          placeholder="MM/YY"
-                          isInvalid={!!fieldState.error}
-                          errorMessage={fieldState.error?.message}
-                        />
-                      )}
-                    </InputMask>
-                  )}
+            <CardHeader className="flex flex-row gap-2 p-4 items-center justify-between">
+              <div className="flex flex-row gap-2">
+                <CreditCardIcon
+                  size={20}
+                  className="text-primary-500"
+                  weight="bold"
                 />
-                <Controller
-                  name="cvv"
-                  control={control}
-                  rules={{ required: "CVV is required" }}
-                  render={({ field, fieldState }) => (
-                    <Input
-                      label="CVV"
-                      labelPlacement="outside"
-                      placeholder="123"
-                      type="password"
-                      {...field}
-                      isInvalid={!!fieldState.error}
-                      errorMessage={fieldState.error?.message}
-                    />
-                  )}
-                />
+                <h2 className="font-heading font-medium text-primary">
+                  Payment method
+                </h2>
               </div>
-            </CardBody>
+              <ButtonGroup>
+                <Button
+                  variant={method === "credit_card" ? "solid" : "light"}
+                  color="primary"
+                  onPress={() => setMethod("credit_card")}
+                >
+                  Credit Card
+                </Button>
+                <Button
+                  variant={method === "debit_card" ? "solid" : "light"}
+                  color="primary"
+                  onPress={() => setMethod("debit_card")}
+                >
+                  Debit Card
+                </Button>
+                <Button
+                  variant={method === "pix" ? "solid" : "light"}
+                  color="primary"
+                  onPress={() => setMethod("pix")}
+                >
+                  PIX
+                </Button>
+              </ButtonGroup>
+            </CardHeader>
+            <CardBody className="gap-4">{renderPaymentMethodFields()}</CardBody>
           </Card>
         </div>
       </div>
 
       {/* Order Summary */}
-      <Card className="basis-1/3 h-fit mt-14">
+      <Card className="basis-1/2 h-fit mt-14">
         <CardHeader className="flex flex-row gap-2 p-4 items-center">
           <ReceiptIcon size={20} className="text-primary-500" weight="bold" />
           <h2 className="font-heading font-medium text-primary">
@@ -274,11 +352,11 @@ const CheckoutPage = () => {
               >
                 <div className="w-3/4 flex gap-2">
                   <p className="text-primary-500 w-7 flex-shrink-0">
-                    {item.cartedQuantity} &times;
+                    {item.quantity} &times;
                   </p>
-                  <p className="truncate">{item.name}</p>
+                  <p className="truncate">{item.product.name}</p>
                 </div>
-                <p>${(item.price * (item.cartedQuantity || 1)).toFixed(2)}</p>
+                <p>${(item.product.price * (item.quantity || 1)).toFixed(2)}</p>
               </div>
             ))}
           </div>
@@ -308,7 +386,13 @@ const CheckoutPage = () => {
           </div>
         </CardBody>
         <CardFooter className="flex flex-col gap-2 pb-4">
-          <Button size="lg" className="w-full" color="primary" type="submit">
+          <Button
+            size="lg"
+            className="w-full"
+            color="primary"
+            type="submit"
+            isLoading={isPending}
+          >
             Place Order
           </Button>
         </CardFooter>

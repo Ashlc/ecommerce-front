@@ -32,7 +32,7 @@ const ProductPage = () => {
   };
 
   return (
-    <div className="bg-default-100 h-[calc(100vh-65px)] dark:bg-default-50/60">
+    <div className="bg-default-100 h-[calc(100vh-65px)] dark:bg-default-50/50">
       <div className="pt-8 lg:px-16">
         <PageTitle title="Product Details" />
       </div>

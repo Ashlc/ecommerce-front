@@ -8,7 +8,13 @@ const Cart = () => {
   const navigate = useNavigate();
   const { cart } = useCart();
   return (
-    <Badge content={cart.length} color="primary">
+    <Badge
+      content={cart.length > 0 ? cart.length : null}
+      variant="shadow"
+      color="primary"
+      placement="bottom-right"
+      size="sm"
+    >
       <Button
         onPress={() => navigate("/cart")}
         isIconOnly
@@ -17,7 +23,7 @@ const Cart = () => {
         size="sm"
         radius="full"
       >
-        <BasketIcon className="w-6 h-6" />
+        <BasketIcon className="w-5 h-5" />
       </Button>
     </Badge>
   );

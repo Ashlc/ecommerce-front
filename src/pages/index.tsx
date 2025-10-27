@@ -18,8 +18,8 @@ export default function IndexPage() {
   });
 
   return (
-    <section className="flex flex-col overflow-hidden dark:bg-default-50/60">
-      <ScrollShadow className="bg-default-100 dark:bg-default-50/60 grow h-[calc(100vh-65px)] overflow-x-hidden">
+    <section className="flex flex-col overflow-hidden dark:bg-default-50/50">
+      <ScrollShadow className="bg-default-100 dark:bg-default-50/50 grow h-[calc(100vh-65px)] overflow-x-hidden">
         <div className="p-8 flex flex-col gap-8">
           <Ads />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
