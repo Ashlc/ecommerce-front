@@ -20,6 +20,7 @@ const ProductCard = ({ product, onPress, ...rest }: Props) => {
           alt={product.name}
           radius="lg"
           className="w-full object-cover aspect-square"
+          fallbackSrc="/images/fallback-image.png"
           isBlurred
           shadow="sm"
           src={product.imageUrl}
@@ -30,7 +31,11 @@ const ProductCard = ({ product, onPress, ...rest }: Props) => {
           {product.name}
         </b>
         <p className="text-xl text-primary-500 font-medium dark:text-default-900">
-          $ {product.price}
+          R${" "}
+          {product.price.toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
         </p>
       </CardFooter>
     </Card>

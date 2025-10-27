@@ -1,16 +1,14 @@
+import { useCart } from "@/hooks/useCart";
 import { Badge } from "@heroui/badge";
 import { Button } from "@heroui/button";
 import { BasketIcon } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 
-type Props = {
-  quantity: number;
-};
-
-const Cart = ({ quantity = 0 }: Props) => {
+const Cart = () => {
   const navigate = useNavigate();
+  const { cart } = useCart();
   return (
-    <Badge content={quantity} color="primary">
+    <Badge content={cart.length} color="primary">
       <Button
         onPress={() => navigate("/cart")}
         isIconOnly

@@ -14,7 +14,7 @@ export const routes = [
         element: <IndexPage />,
       },
       {
-        path: "/products/:productId",
+        path: "/products/:id",
         element: <ProductPage />,
       },
       {

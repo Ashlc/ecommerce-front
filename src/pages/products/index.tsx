@@ -1,57 +1,50 @@
-import { products } from "@/services/mock";
+import PageTitle from "@/components/page-title";
+import { useCart } from "@/hooks/useCart";
+import { IProduct } from "@/interfaces";
+import api from "@/services/api";
 import { Button, ButtonGroup } from "@heroui/button";
 import { Card } from "@heroui/card";
 import { Image } from "@heroui/image";
-import {
-  ArrowLeftIcon,
-  MinusIcon,
-  PlusIcon,
-  ShoppingCartIcon,
-} from "@phosphor-icons/react";
+import { MinusIcon, PlusIcon, ShoppingCartIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const ProductPage = () => {
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const location = useLocation();
-  const product = products.find(
-    (p) => `/products/${p.id}` === location.pathname,
-  );
+  const { id } = useParams();
+  const { addToCart, isAddingToCart } = useCart();
 
-  const handleAddToCart = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigate("/cart");
-    }, 1000);
+  const { data: product, isLoading } = useQuery({
+    queryKey: ["product", id],
+    queryFn: async () => {
+      const res = await api.get<IProduct>(`/products/${id}`);
+      return res.data;
+    },
+  });
+
+  const handleAddToCart = async () => {
+    if (id) {
+      await addToCart({ productId: id, quantity });
+    }
+    navigate("/cart");
   };
 
   return (
-    <div className="bg-default-100 h-[calc(100vh-65px)]">
-      <div className="flex flex-row items-center gap-2 p-4 text-sm">
-        <Button
-          as={"a"}
-          variant="light"
-          href="/"
-          size="sm"
-          isIconOnly
-          radius="full"
-        >
-          <ArrowLeftIcon size={18} />
-        </Button>
-        <p>Back to catalog</p>
+    <div className="bg-default-100 h-[calc(100vh-65px)] dark:bg-default-50/60">
+      <div className="pt-8 lg:px-16">
+        <PageTitle title="Product Details" />
       </div>
-      {product ? (
-        <section className="flex flex-col lg:flex-row p-8 gap-16 lg:px-16">
-          <div className="basis-2/5">
+      {product && !isLoading ? (
+        <section className="flex flex-col lg:flex-row gap-16 lg:px-16 h-fit">
+          <div className="basis-2/5 flex-shrink-0">
             <Image
               src={product?.imageUrl || ""}
               alt={product?.name}
-              isBlurred
-              shadow="lg"
-              className="w-full aspect-square"
+              isLoading={isLoading}
+              shadow="md"
+              className="w-full aspect-square object-cover"
             />
           </div>
           <Card className="flex flex-col gap-16 p-16 grow">
@@ -67,7 +60,7 @@ const ProductPage = () => {
             <div className="flex flex-row gap-8 items-center">
               <Button
                 variant="shadow"
-                isLoading={loading}
+                isLoading={isAddingToCart}
                 size="lg"
                 color="primary"
                 className="basis-1/2"

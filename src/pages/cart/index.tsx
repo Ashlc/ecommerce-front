@@ -1,7 +1,7 @@
 import PageTitle from "@/components/page-title";
 import CartedProduct from "@/components/products/carted-product";
-import { IProduct } from "@/interfaces";
-import { products } from "@/services/mock";
+import { useCart } from "@/hooks/useCart";
+import { ICartItem, IProduct } from "@/interfaces";
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Input } from "@heroui/input";
@@ -21,6 +21,7 @@ const CartPage = () => {
   const [checkoutItems, setCheckoutItems] = useState<Set<IProduct>>(new Set());
   const [shipping, setShipping] = useState(0);
   const [zipCode, setZipCode] = useState("");
+  const { cart, removeFromCart, isRemovingFromCart } = useCart();
   const [total, setTotal] = useState({
     productTotal: 0,
     taxes: 0,
@@ -68,7 +69,7 @@ const CartPage = () => {
     navigate("/checkout");
   };
   return (
-    <div className="flex flex-col lg:flex-row gap-8 p-8 bg-default-100 dark:bg-default-50 md:h-[calc(100vh-65px)]">
+    <div className="flex flex-col lg:flex-row gap-8 p-8 bg-default-100 dark:bg-default-50/60 md:h-[calc(100vh-65px)]">
       <div className="relative container basis-2/3">
         <ScrollShadow
           className="max-sm:overflow-visible lg:px-4 relative h-full"
@@ -76,19 +77,18 @@ const CartPage = () => {
         >
           <PageTitle title="Your cart" icon={BasketIcon} />
           <div className="flex flex-col gap-8 lg:pb-24">
-            {products
-              .filter(
-                (product) =>
-                  product.cartedQuantity && product.cartedQuantity > 0,
-              )
-              .map((product) => (
-                <CartedProduct
-                  key={product.id}
-                  product={product}
-                  onChange={(checked) => handleProductSelect(product, checked)}
-                  onClick={() => navigate(`/products/${product.id}`)}
-                />
-              ))}
+            {cart.map((item: ICartItem) => (
+              <CartedProduct
+                key={item.id}
+                product={item.product}
+                quantity={item.quantity}
+                onChange={(checked) =>
+                  handleProductSelect(item.product, checked)
+                }
+                onDelete={() => removeFromCart(item.id)}
+                onClick={() => navigate(`/products/${item.id}`)}
+              />
+            ))}
           </div>
         </ScrollShadow>
         <Button
@@ -171,7 +171,7 @@ const CartPage = () => {
                 Calculate
               </Button>
             </div>
-            <div className="flex flex-row justify-between w-full gap-4 mt-4 p-4 border border-default-200 rounded-xl bg-default-50 dark:bg-default-900">
+            <div className="flex flex-row justify-between w-full gap-4 mt-4 p-4 border border-default-200 rounded-xl bg-default-50">
               <span>Estimated Shipping:</span>
               <span className="font-bold">${shipping.toFixed(2)}</span>
             </div>
