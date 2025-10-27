@@ -1,3 +1,4 @@
+import PageTitle from "@/components/page-title";
 import CartedProduct from "@/components/products/carted-product";
 import { IProduct } from "@/interfaces";
 import { products } from "@/services/mock";
@@ -5,18 +6,27 @@ import { Button } from "@heroui/button";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Input } from "@heroui/input";
 import { ScrollShadow } from "@heroui/scroll-shadow";
-import { CaretUpIcon, ReceiptIcon, TruckIcon } from "@phosphor-icons/react";
+import {
+  BasketIcon,
+  CaretRightIcon,
+  CaretUpIcon,
+  ReceiptIcon,
+  TruckIcon,
+} from "@phosphor-icons/react";
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [checkoutItems, setCheckoutItems] = useState<Set<IProduct>>(new Set());
+  const [shipping, setShipping] = useState(0);
+  const [zipCode, setZipCode] = useState("");
   const [total, setTotal] = useState({
     productTotal: 0,
-    shipping: 5,
     taxes: 0,
     grandTotal: 0,
   });
+  const navigate = useNavigate();
 
   const calculateTotal = () => {
     const productTotal = Array.from(checkoutItems).reduce(
@@ -24,14 +34,21 @@ const CartPage = () => {
       0,
     );
     const taxes = productTotal * 0.07;
-    const grandTotal = productTotal + total.shipping + taxes;
+    const grandTotal = productTotal + taxes;
 
     setTotal({
       productTotal,
-      shipping: total.shipping,
       taxes,
       grandTotal,
     });
+  };
+
+  const calculateShipping = (zipCode: string) => {
+    const zipCodeNum = parseInt(zipCode, 10);
+    if (zipCodeNum) {
+      setShipping(Math.floor(zipCodeNum * 0.000001));
+    }
+    calculateTotal();
   };
 
   const handleProductSelect = (product: IProduct, checked: boolean) => {
@@ -47,15 +64,18 @@ const CartPage = () => {
     calculateTotal();
   };
 
-  const onSubmit = (data: any) => {
-    console.log(data);
+  const onSubmit = () => {
+    navigate("/checkout");
   };
   return (
-    <div className="flex flex-col lg:flex-row gap-8 p-8 bg-default-100 dark:bg-default-50 h-[calc(100vh-65px)]">
+    <div className="flex flex-col lg:flex-row gap-8 p-8 bg-default-100 dark:bg-default-50 md:h-[calc(100vh-65px)]">
       <div className="relative container basis-2/3">
-        <ScrollShadow className="p-4 h-full relative" ref={scrollRef}>
-          <h2 className="font-heading mb-6 font-medium text-lg">Your Cart</h2>
-          <div className="flex flex-col gap-8 pb-24">
+        <ScrollShadow
+          className="max-sm:overflow-visible lg:px-4 relative h-full"
+          ref={scrollRef}
+        >
+          <PageTitle title="Your cart" icon={BasketIcon} />
+          <div className="flex flex-col gap-8 lg:pb-24">
             {products
               .filter(
                 (product) =>
@@ -66,6 +86,7 @@ const CartPage = () => {
                   key={product.id}
                   product={product}
                   onChange={(checked) => handleProductSelect(product, checked)}
+                  onClick={() => navigate(`/products/${product.id}`)}
                 />
               ))}
           </div>
@@ -76,7 +97,7 @@ const CartPage = () => {
           radius="full"
           variant="shadow"
           size="lg"
-          className="absolute right-6 bottom-6"
+          className="max-sm:hidden absolute right-6 bottom-6"
           onPress={() => {
             scrollRef.current?.scrollTo({
               top: 0,
@@ -100,20 +121,26 @@ const CartPage = () => {
         </CardHeader>
         <CardBody className="gap-8">
           <div className="flex flex-col gap-2 pt-4 border-t border-default-200">
+            {checkoutItems.size === 0 && (
+              <p className="text-default-500">No items selected.</p>
+            )}
             {Array.from(checkoutItems).map((item) => (
               <div
                 className="flex flex-row justify-between items-center"
                 key={item.id}
               >
                 <p>
-                  {item.name} &times; {item.cartedQuantity}
+                  <span className="whitespace-nowrap truncate">
+                    {item.name}
+                  </span>{" "}
+                  &times; {item.cartedQuantity}
                 </p>
                 <p>${(item.price * (item.cartedQuantity || 1)).toFixed(2)}</p>
               </div>
             ))}
-            <div className="flex flex-row justify-between w-full gap-4 text-lg border-y py-4 mt-4 border-default-200">
+            <div className="flex flex-row justify-between w-full gap-4 text-lg border-y py-4 mt-2 border-default-200">
               <p>Product total:</p>
-              <p className="font-bold">${total.productTotal.toFixed(2)}</p>
+              <p className="font-semibold">${total.productTotal.toFixed(2)}</p>
             </div>
           </div>
           <div>
@@ -127,24 +154,33 @@ const CartPage = () => {
                 Shipping Information
               </h2>
             </div>
-            <div className="flex flex-row gap-4 items-end">
+            <div className="flex flex-row gap-4 items-start">
               <Input
                 label="ZIP code"
-                labelPlacement="outside"
-                placeholder="00000"
+                placeholder="00000-000"
+                size="sm"
+                pattern="\d{8}"
+                value={zipCode}
+                onChange={(e) => setZipCode(e.target.value)}
               />
-              <Button color="primary">Calculate</Button>
+              <Button
+                color="primary"
+                size="lg"
+                onPress={() => calculateShipping(zipCode)}
+              >
+                Calculate
+              </Button>
             </div>
-            <div className="flex flex-row justify-between w-full gap-4 mt-4 p-4 border border-default-200 rounded-lg bg-default-50 dark:bg-default-900">
+            <div className="flex flex-row justify-between w-full gap-4 mt-4 p-4 border border-default-200 rounded-xl bg-default-50 dark:bg-default-900">
               <span>Estimated Shipping:</span>
-              <span className="font-bold">${total.shipping.toFixed(2)}</span>
+              <span className="font-bold">${shipping.toFixed(2)}</span>
             </div>
           </div>
-          <div className="flex flex-row justify-between w-full gap-4 border-t pt-4 border-default-200">
+          <div className="flex flex-row justify-between w-full gap-4 border-y py-4 border-default-200">
             <span>Estimated taxes:</span>
-            <span className="font-bold">${total.taxes.toFixed(2)}</span>
+            <span className="font-medium">${total.taxes.toFixed(2)}</span>
           </div>
-          <div className="flex flex-row justify-between w-full gap-4 text-xl border-t pt-4 border-default-200">
+          <div className="flex flex-row justify-between w-full gap-4 text-xl border-default-200">
             <span>Total:</span>
             <span className="font-bold">${total.grandTotal.toFixed(2)}</span>
           </div>
@@ -154,9 +190,10 @@ const CartPage = () => {
             size="lg"
             className="w-full mt-4"
             color="primary"
-            onPress={() => onSubmit({ items: Array.from(checkoutItems) })}
+            onPress={() => onSubmit()}
+            endContent={<CaretRightIcon size={20} />}
           >
-            Proceed to Checkout
+            Checkout
           </Button>
         </CardFooter>
       </Card>

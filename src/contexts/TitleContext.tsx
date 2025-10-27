@@ -15,7 +15,7 @@ export const TitleProvider = ({ children }: { children: ReactNode }) => {
 
   const setTitle = (title: string) => {
     setTitleState(title);
-    document.title = title ? `${title} - E-commerce` : "E-commerce";
+    document.title = title ? `${title} - iShop` : "iShop";
   };
 
   return (

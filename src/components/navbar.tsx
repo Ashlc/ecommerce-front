@@ -41,8 +41,8 @@ export const Navbar = () => {
             color="foreground"
             href="/"
           >
+            iShop
             <ShoppingCartIcon className="w-6 h-6" weight="duotone" />
-            E-Commerce
           </Link>
         </NavbarBrand>
       </NavbarContent>

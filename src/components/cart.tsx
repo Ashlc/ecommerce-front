@@ -1,6 +1,6 @@
 import { Badge } from "@heroui/badge";
 import { Button } from "@heroui/button";
-import { ShoppingBagIcon } from "@phosphor-icons/react";
+import { BasketIcon } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 
 type Props = {
@@ -19,7 +19,7 @@ const Cart = ({ quantity = 0 }: Props) => {
         size="sm"
         radius="full"
       >
-        <ShoppingBagIcon className="w-6 h-6" />
+        <BasketIcon className="w-6 h-6" />
       </Button>
     </Badge>
   );

@@ -115,3 +115,7 @@ export const products: IProduct[] = [
     cartedQuantity: 2,
   },
 ];
+
+export const cart = products.filter(
+  (product) => product.cartedQuantity && product.cartedQuantity > 0,
+);
