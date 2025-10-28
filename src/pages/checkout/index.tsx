@@ -31,7 +31,7 @@ type CheckoutFormValues = {
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { cart, refetchCart, user } = useUser();
+  const { cart, refetchCart, user, refetchOrders } = useUser();
   const [method, setMethod] = useState<PaymentMethod>("credit_card");
   const [total, setTotal] = useState({
     productTotal: 0,
@@ -76,7 +76,7 @@ const CheckoutPage = () => {
     mutationFn: async (data: CheckoutFormValues) => {
       console.log("Placing order with data:", data);
       const response = await api.post("/orders/place", { userId: user?.id, method });
-      
+
       // Processar pagamento automaticamente
       if (response.data.paymentUrl) {
         console.log("Processing payment...");
@@ -89,12 +89,13 @@ const CheckoutPage = () => {
           await api.post(`/payments/callback/${paymentId}`);
         }
       }
-      
+
       return response.data;
     },
-    onSuccess: (data: any) => {
+    onSuccess: async (data: any) => {
       console.log("Order placed successfully:", data);
-      refetchCart();
+      await refetchCart();
+      await refetchOrders();
       // Mostrar informações do pedido
       alert(`Pedido criado com sucesso!\nID: ${data.order.id}\nStatus: Pago`);
       navigate("/profile");

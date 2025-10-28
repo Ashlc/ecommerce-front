@@ -22,7 +22,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose }: Props) => {
               <div className="flex items-center gap-2">
                 <ReceiptIcon className="text-primary-500" size={24} />
                 <span className="font-heading">
-                  Order #{order.id.slice(0, 8)}
+                  Order #{order.id.replace('order_', '')}
                 </span>
               </div>
             </ModalHeader>

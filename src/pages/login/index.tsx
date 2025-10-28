@@ -46,8 +46,8 @@ const LoginPage = () => {
 
   const handleQuickLogin = () => {
     setIsLoading(true);
-    setUserId("cmh9l00gv000hted4jlbc59o7");
-    localStorage.setItem("userId", "cmh9l00gv000hted4jlbc59o7");
+    setUserId("cmh9skt4t000huh9wwlxv70rn");
+    localStorage.setItem("userId", "cmh9skt4t000huh9wwlxv70rn");
     localStorage.setItem("_auth", "dummy_token");
     setTimeout(() => {
       setIsLoading(false);

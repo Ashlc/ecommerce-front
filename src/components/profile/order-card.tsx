@@ -31,7 +31,7 @@ const OrderCard = ({ order, onClick }: Props) => {
         </div>
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <p className="font-semibold text-lg">#{order.id.slice(0, 8)}</p>
+            <p className="font-semibold text-lg">#{order.id.replace('order_', '')}</p>
             <Chip
               className="capitalize"
               color={statusColor}
