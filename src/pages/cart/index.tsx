@@ -1,7 +1,8 @@
 import PageTitle from "@/components/page-title";
 import CartedProduct from "@/components/products/carted-product";
 import { useCart } from "@/hooks/useCart";
-import { ICartItem, IProduct } from "@/interfaces";
+import { ICartItem } from "@/interfaces";
+import { calculateShipping, calculateTotal } from "@/services/helpers";
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Input } from "@heroui/input";
@@ -18,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [checkoutItems, setCheckoutItems] = useState<Set<IProduct>>(new Set());
+  const [checkoutItems, setCheckoutItems] = useState<Set<ICartItem>>(new Set());
   const [shipping, setShipping] = useState(0);
   const [zipCode, setZipCode] = useState("");
   const { cart, removeFromCart, isRemovingFromCart } = useCart();
@@ -29,30 +30,18 @@ const CartPage = () => {
   });
   const navigate = useNavigate();
 
-  const calculateTotal = () => {
-    const productTotal = Array.from(checkoutItems).reduce(
-      (sum, item) => sum + item.price * (item.cartedQuantity || 1),
-      0,
-    );
-    const taxes = productTotal * 0.07;
-    const grandTotal = productTotal + taxes;
-
+  const handleTotals = () => {
+    const shipping = calculateShipping(zipCode);
+    setShipping(shipping);
+    const totals = calculateTotal(Array.from(checkoutItems));
     setTotal({
-      productTotal,
-      taxes,
-      grandTotal,
+      productTotal: totals.productTotal,
+      taxes: totals.taxes,
+      grandTotal: totals.grandTotal + shipping,
     });
   };
 
-  const calculateShipping = (zipCode: string) => {
-    const zipCodeNum = parseInt(zipCode, 10);
-    if (zipCodeNum) {
-      setShipping(Math.floor(zipCodeNum * 0.000001));
-    }
-    calculateTotal();
-  };
-
-  const handleProductSelect = (product: IProduct, checked: boolean) => {
+  const handleProductSelect = (product: ICartItem, checked: boolean) => {
     setCheckoutItems((prev) => {
       const updated = new Set(prev);
       if (checked) {
@@ -62,12 +51,13 @@ const CartPage = () => {
       }
       return updated;
     });
-    calculateTotal();
+    handleTotals();
   };
 
   const onSubmit = () => {
     navigate("/checkout");
   };
+
   return (
     <div className="flex flex-col lg:flex-row gap-8 p-8 bg-default-100 dark:bg-default-50/50 md:h-[calc(100vh-65px)]">
       <div className="relative container basis-2/3">
@@ -82,9 +72,7 @@ const CartPage = () => {
                 key={item.id}
                 product={item.product}
                 quantity={item.quantity}
-                onChange={(checked) =>
-                  handleProductSelect(item.product, checked)
-                }
+                onChange={(checked) => handleProductSelect(item, checked)}
                 onDelete={() => removeFromCart(item.id)}
                 onClick={() => navigate(`/products/${item.id}`)}
               />
@@ -131,11 +119,11 @@ const CartPage = () => {
               >
                 <p>
                   <span className="whitespace-nowrap truncate">
-                    {item.name}
+                    {item.product.name}
                   </span>{" "}
-                  &times; {item.cartedQuantity}
+                  &times; {item.quantity}
                 </p>
-                <p>${(item.price * (item.cartedQuantity || 1)).toFixed(2)}</p>
+                <p>${(item.product.price * (item.quantity || 1)).toFixed(2)}</p>
               </div>
             ))}
             <div className="flex flex-row justify-between w-full gap-4 text-lg border-y py-4 mt-2 border-default-200">

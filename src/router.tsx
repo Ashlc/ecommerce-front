@@ -18,23 +18,28 @@ export const routes = [
       },
       {
         path: "/",
-        element: <ProtectedRoute><IndexPage /></ProtectedRoute>,
+        element: <IndexPage />,
       },
       {
         path: "/products/:id",
-        element: <ProtectedRoute><ProductPage /></ProtectedRoute>,
+        element: <ProductPage />,
       },
       {
-        path: "/cart",
-        element: <ProtectedRoute><CartPage /></ProtectedRoute>,
-      },
-      {
-        path: "/checkout",
-        element: <ProtectedRoute><CheckoutPage /></ProtectedRoute>,
-      },
-      {
-        path: "/profile",
-        element: <ProtectedRoute><ProfilePage /></ProtectedRoute>,
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: "/cart",
+            element: <CartPage />,
+          },
+          {
+            path: "/checkout",
+            element: <CheckoutPage />,
+          },
+          {
+            path: "/profile",
+            element: <ProfilePage />,
+          },
+        ],
       },
     ],
   },

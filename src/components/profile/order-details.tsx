@@ -1,0 +1,109 @@
+import { IOrder } from "@/interfaces";
+import { formatDate, getOrderStatusColor } from "@/services/helpers";
+import { Chip } from "@heroui/chip";
+import { Divider } from "@heroui/divider";
+import { Modal, ModalBody, ModalContent, ModalHeader } from "@heroui/modal";
+import { Skeleton } from "@heroui/skeleton";
+import { CalendarBlankIcon, ReceiptIcon } from "@phosphor-icons/react";
+
+type Props = {
+  order?: IOrder;
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+const OrderDetailsModal = ({ order, isOpen, onClose }: Props) => {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+      <ModalContent>
+        {order ? (
+          <>
+            <ModalHeader className="flex justify-between items-start">
+              <div className="flex items-center gap-2">
+                <ReceiptIcon className="text-primary-500" size={24} />
+                <span className="font-heading">
+                  Order #{order.id.slice(0, 8)}
+                </span>
+              </div>
+            </ModalHeader>
+            <ModalBody className="gap-4 pb-8">
+              <div className="flex justify-between items-center">
+                <Chip
+                  className="capitalize"
+                  color={getOrderStatusColor(order.status)}
+                  variant="flat"
+                >
+                  {order.status}
+                </Chip>
+                <div className="flex items-center gap-1 text-default-500">
+                  <CalendarBlankIcon size={18} />
+                  <p>{formatDate(order.orderDate || order.createdAt)}</p>
+                </div>
+              </div>
+              <Divider />
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between">
+                  <span className="text-default-600">Product Total:</span>
+                  <span className="font-medium">
+                    ${order.productTotal.toFixed(2)}
+                  </span>
+                </div>
+                {order.shippingCost && (
+                  <div className="flex justify-between">
+                    <span className="text-default-600">Shipping:</span>
+                    <span className="font-medium">
+                      ${order.shippingCost.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {order.taxes && (
+                  <div className="flex justify-between">
+                    <span className="text-default-600">Taxes:</span>
+                    <span className="font-medium">
+                      ${order.taxes.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <Divider />
+              <div className="flex justify-between text-lg font-bold">
+                <span>Total:</span>
+                <span>${order.totalAmount.toFixed(2)}</span>
+              </div>
+              <Divider />
+              {order.products.length > 0 && (
+                <div className="flex flex-col gap-4 p-4 bg-default-100 rounded-lg">
+                  <p className="font-heading text-sm text-default-600">Items</p>
+                  <div className="flex flex-col gap-2">
+                    {order.products.slice(0, 3).map((product, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center text-sm"
+                      >
+                        <span className="truncate flex-1">{product.name}</span>
+                        <span className="font-medium ml-4">
+                          ${product.price.toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                    {order.products.length > 3 && (
+                      <div className="text-xs text-default-500">
+                        +{order.products.length - 3} more items
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </ModalBody>
+          </>
+        ) : (
+          <Skeleton>
+            <div className="h-64 w-lg" />
+          </Skeleton>
+        )}
+      </ModalContent>
+    </Modal>
+  );
+};
+
+export default OrderDetailsModal;

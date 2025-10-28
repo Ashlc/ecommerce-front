@@ -39,13 +39,11 @@ export const UserContext = createContext<UserContextType | undefined>(
 );
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  // Tentar pegar userId do localStorage, se não existir, começar vazio
   const [userIdState, setUserIdStateInternal] = useState<string>(() => {
     const storedUserId = localStorage.getItem("userId");
     return storedUserId || "";
   });
 
-  // Wrapper para setUserId que também salva no localStorage
   const setUserId = (newUserId: string) => {
     setUserIdStateInternal(newUserId);
     if (newUserId) {
@@ -58,13 +56,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const userId = userIdState;
 
   // Fetch user information
-  const {
-    data: user,
-    isLoading: isLoadingUser,
-  } = useQuery<IUser>({
+  const { data: user, isLoading: isLoadingUser } = useQuery<IUser>({
     queryKey: ["user", userId],
     queryFn: async () => {
-      const res = await api.get<IUser>(`/api/users/${userId}`);
+      const res = await api.get<IUser>(`/users/${userId}`);
       return res.data;
     },
     enabled: !!userId, // Only fetch when userId exists
@@ -74,7 +69,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const { data: cart = [], refetch: refetchCart } = useQuery({
     queryKey: ["cart", userId],
     queryFn: async () => {
-      const res = await api.get<ICart>(`/api/cart/${userId}`);
+      const res = await api.get<ICart>(`/cart/${userId}`);
       return res.data?.products || [];
     },
     enabled: !!userId, // Only fetch when userId exists
@@ -87,7 +82,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     { productId: string; quantity: number }
   >({
     mutationFn: async ({ productId, quantity }) => {
-      await api.post(`/api/cart/${userId}/items`, { productId, quantity });
+      await api.post(`/cart/${userId}/items`, { productId, quantity });
     },
     onSuccess: () => {
       refetchCart();
@@ -101,7 +96,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     string
   >({
     mutationFn: async (productId) => {
-      await api.delete(`/api/cart/${userId}/items/${productId}`);
+      await api.delete(`/cart/${userId}/items/${productId}`);
     },
     onSuccess: () => {
       refetchCart();
@@ -116,7 +111,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   } = useQuery<IOrder[]>({
     queryKey: ["orders", userId],
     queryFn: async () => {
-      const res = await api.get<IOrder[]>(`/api/orders/user/${userId}`);
+      const res = await api.get<IOrder[]>(`/orders/user/${userId}`);
       return Array.isArray(res.data) ? res.data : [];
     },
     enabled: !!userId, // Only fetch when userId exists
@@ -144,4 +139,3 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     </UserContext.Provider>
   );
 };
-
