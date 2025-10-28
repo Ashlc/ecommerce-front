@@ -76,16 +76,24 @@ const CheckoutPage = () => {
   const { mutate: placeOrder, isPending } = useMutation({
     mutationFn: async (data: CheckoutFormValues) => {
       console.log("Placing order with data:", data);
-      await api.post("/orders/place", { userId, method });
+      const response = await api.post("/orders/place", { userId, method });
+      return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      console.log("Order placed successfully:", data);
       refetchCart();
+      // Mostrar informações do pedido e URL de pagamento
+      alert(`Pedido criado com sucesso!\nID: ${data.order.id}\nPagamento: ${data.paymentUrl}`);
+      navigate("/");
+    },
+    onError: (error: any) => {
+      console.error("Error placing order:", error);
+      alert("Erro ao processar pedido. Tente novamente.");
     },
   });
 
-  const onSubmit: SubmitHandler<CheckoutFormValues> = (data) => {
+  const onSubmit: SubmitHandler<CheckoutFormValues> = (data: any) => {
     placeOrder(data);
-    navigate("/");
   };
 
   const renderPaymentMethodFields = () => {
