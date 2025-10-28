@@ -13,15 +13,24 @@ import {
 import {
   MagnifyingGlassIcon,
   ShoppingCartIcon,
+  SignOutIcon,
   UserIcon,
 } from "@phosphor-icons/react";
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import { siteConfig } from "@/config/site";
 import { Button } from "@heroui/button";
+import { useNavigate } from "react-router-dom";
 import Cart from "./cart";
 
 export const Navbar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("_auth");
+    navigate("/login");
+  };
   const searchInput = (
     <Input
       aria-label="Search"
@@ -59,11 +68,26 @@ export const Navbar = () => {
 
       <NavbarContent justify="end">
         <NavbarItem className="hidden items-center md:flex gap-4">
-          <Button variant="light" isIconOnly size="sm" radius="full">
+          <Button
+            variant="light"
+            isIconOnly
+            size="sm"
+            radius="full"
+            onPress={() => navigate("/profile")}
+          >
             <UserIcon className="w-5 h-5" />
           </Button>
           <Cart />
           <Divider orientation="vertical" className="h-6" />
+          <Button
+            variant="light"
+            isIconOnly
+            size="sm"
+            radius="full"
+            onPress={handleLogout}
+          >
+            <SignOutIcon className="w-5 h-5" />
+          </Button>
           <ThemeSwitch />
         </NavbarItem>
       </NavbarContent>

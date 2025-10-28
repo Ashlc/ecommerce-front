@@ -9,11 +9,11 @@ import { useNavigate } from "react-router-dom";
 export default function IndexPage() {
   const navigate = useNavigate();
 
-  const { data: products = [], isLoading } = useQuery({
+  const { data: products, isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const res = await api.get<IProduct[]>("/products");
-      return res.data;
+      const res = await api.get<IProduct[]>("/api/products");
+      return Array.isArray(res.data) ? res.data : [];
     },
   });
 
@@ -22,7 +22,9 @@ export default function IndexPage() {
       <ScrollShadow className="bg-default-100 dark:bg-default-50/50 grow h-[calc(100vh-65px)] overflow-x-hidden">
         <div className="p-8 flex flex-col gap-8">
           <Ads />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+          <div>
+            <h2 className="text-2xl font-bold mb-6">All Products</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
             {isLoading
               ? Array.from({ length: 6 }).map((_, index) => (
                   <div
@@ -34,12 +36,14 @@ export default function IndexPage() {
                     <div className="h-6 bg-default-300 rounded w-1/2"></div>
                   </div>
                 ))
-              : products.map((product) => (
+              : (products || []).map((product) => (
                   <ProductCard
+                    key={product.id}
                     product={product}
                     onPress={() => navigate(`/products/${product.id}`)}
                   />
                 ))}
+            </div>
           </div>
         </div>
       </ScrollShadow>

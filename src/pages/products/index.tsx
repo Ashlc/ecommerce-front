@@ -19,7 +19,7 @@ const ProductPage = () => {
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", id],
     queryFn: async () => {
-      const res = await api.get<IProduct>(`/products/${id}`);
+      const res = await api.get<IProduct>(`/api/products/${id}`);
       return res.data;
     },
   });

@@ -1,29 +1,40 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import IndexPage from "./pages";
 import CartPage from "./pages/cart";
 import CheckoutPage from "./pages/checkout";
+import LoginPage from "./pages/login";
 import ProductPage from "./pages/products";
+import ProfilePage from "./pages/profile";
 
 export const routes = [
   {
     element: <App />,
     children: [
       {
+        path: "/login",
+        element: <LoginPage />,
+      },
+      {
         path: "/",
-        element: <IndexPage />,
+        element: <ProtectedRoute><IndexPage /></ProtectedRoute>,
       },
       {
         path: "/products/:id",
-        element: <ProductPage />,
+        element: <ProtectedRoute><ProductPage /></ProtectedRoute>,
       },
       {
         path: "/cart",
-        element: <CartPage />,
+        element: <ProtectedRoute><CartPage /></ProtectedRoute>,
       },
       {
         path: "/checkout",
-        element: <CheckoutPage />,
+        element: <ProtectedRoute><CheckoutPage /></ProtectedRoute>,
+      },
+      {
+        path: "/profile",
+        element: <ProtectedRoute><ProfilePage /></ProtectedRoute>,
       },
     ],
   },

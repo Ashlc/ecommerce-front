@@ -76,7 +76,7 @@ const CheckoutPage = () => {
   const { mutate: placeOrder, isPending } = useMutation({
     mutationFn: async (data: CheckoutFormValues) => {
       console.log("Placing order with data:", data);
-      await api.post("/orders/place", { userId, method });
+      await api.post("/api/orders/place", { userId, method });
     },
     onSuccess: () => {
       refetchCart();
