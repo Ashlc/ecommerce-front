@@ -14,7 +14,8 @@ import {
   ReceiptIcon,
   TruckIcon,
 } from "@phosphor-icons/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import InputMask from "react-input-mask";
 import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
@@ -31,9 +32,9 @@ const CartPage = () => {
   const navigate = useNavigate();
 
   const handleTotals = () => {
-    const shipping = calculateShipping(zipCode);
+    const shipping = calculateShipping(zipCode.replace("-", ""));
     setShipping(shipping);
-    const totals = calculateTotal(Array.from(checkoutItems));
+    const totals = calculateTotal(cart);
     setTotal({
       productTotal: totals.productTotal,
       taxes: totals.taxes,
@@ -41,18 +42,9 @@ const CartPage = () => {
     });
   };
 
-  const handleProductSelect = (product: ICartItem, checked: boolean) => {
-    setCheckoutItems((prev) => {
-      const updated = new Set(prev);
-      if (checked) {
-        updated.add(product);
-      } else {
-        updated.delete(product);
-      }
-      return updated;
-    });
+  useEffect(() => {
     handleTotals();
-  };
+  }, [checkoutItems, shipping]);
 
   const onSubmit = () => {
     navigate("/checkout");
@@ -72,7 +64,6 @@ const CartPage = () => {
                 key={item.id}
                 product={item.product}
                 quantity={item.quantity}
-                onChange={(checked) => handleProductSelect(item, checked)}
                 onDelete={() => removeFromCart(item.id)}
                 onClick={() => navigate(`/products/${item.id}`)}
               />
@@ -109,10 +100,10 @@ const CartPage = () => {
         </CardHeader>
         <CardBody className="gap-8">
           <div className="flex flex-col gap-2 pt-4 border-t border-default-200">
-            {checkoutItems.size === 0 && (
+            {cart.length === 0 && (
               <p className="text-default-500">No items selected.</p>
             )}
-            {Array.from(checkoutItems).map((item) => (
+            {cart.map((item) => (
               <div
                 className="flex flex-row justify-between items-center"
                 key={item.id}
@@ -143,14 +134,23 @@ const CartPage = () => {
               </h2>
             </div>
             <div className="flex flex-row gap-4 items-start">
-              <Input
-                label="ZIP code"
-                placeholder="00000-000"
-                size="sm"
-                pattern="\d{8}"
+              <InputMask
+                mask="99999-999"
                 value={zipCode}
-                onChange={(e) => setZipCode(e.target.value)}
-              />
+                onChange={(e) => {
+                  console.log(e);
+                  setZipCode(e.target.value);
+                }}
+              >
+                {(inputProps) => (
+                  <Input
+                    {...inputProps}
+                    label="ZIP code"
+                    placeholder="00000-000"
+                    size="sm"
+                  />
+                )}
+              </InputMask>
               <Button
                 color="primary"
                 size="lg"

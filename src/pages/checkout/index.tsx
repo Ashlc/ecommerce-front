@@ -1,5 +1,5 @@
 import PageTitle from "@/components/page-title";
-import { useCart } from "@/hooks/useCart";
+import { useUser } from "@/hooks/useUser";
 import api from "@/services/api";
 import { PaymentMethod } from "@/types";
 import { Button, ButtonGroup } from "@heroui/button";
@@ -31,7 +31,7 @@ type CheckoutFormValues = {
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { cart, refetchCart, userId } = useCart();
+  const { cart, refetchCart, user } = useUser();
   const [method, setMethod] = useState<PaymentMethod>("credit_card");
   const [total, setTotal] = useState({
     productTotal: 0,
@@ -61,12 +61,11 @@ const CheckoutPage = () => {
 
   const { control, handleSubmit } = useForm<CheckoutFormValues>({
     defaultValues: {
-      street: "",
-      district: "",
-      number: "",
-      city: "",
-      state: "",
-      zipCode: "",
+      street: user?.address.street.split(",")[0] || "",
+      number: user?.address.street.split(",")[1]?.trim() || "",
+      city: user?.address.city || "",
+      state: user?.address.state || "",
+      zipCode: user?.address.zipCode || "",
       cardNumber: "",
       expiryDate: "",
       cvv: "",
@@ -76,16 +75,16 @@ const CheckoutPage = () => {
   const { mutate: placeOrder, isPending } = useMutation({
     mutationFn: async (data: CheckoutFormValues) => {
       console.log("Placing order with data:", data);
-      await api.post("/orders/place", { userId, method });
+      await api.post("/orders/place", { userId: user?.id, method });
     },
     onSuccess: () => {
       refetchCart();
+      navigate("/profile");
     },
   });
 
   const onSubmit: SubmitHandler<CheckoutFormValues> = (data) => {
     placeOrder(data);
-    navigate("/");
   };
 
   const renderPaymentMethodFields = () => {
