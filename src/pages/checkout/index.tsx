@@ -75,11 +75,19 @@ const CheckoutPage = () => {
   const { mutate: placeOrder, isPending } = useMutation({
     mutationFn: async (data: CheckoutFormValues) => {
       console.log("Placing order with data:", data);
-      await api.post("/orders/place", { userId: user?.id, method });
+      const response = await api.post("/orders/place", {
+        userId: user?.id,
+        method,
+      });
+      return response.data;
     },
     onSuccess: () => {
       refetchAll();
       navigate("/profile");
+    },
+    onError: (error: any) => {
+      console.error("Error placing order:", error);
+      alert("Erro ao processar pedido. Tente novamente.");
     },
   });
 
