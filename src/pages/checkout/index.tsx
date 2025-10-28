@@ -76,13 +76,27 @@ const CheckoutPage = () => {
     mutationFn: async (data: CheckoutFormValues) => {
       console.log("Placing order with data:", data);
       const response = await api.post("/orders/place", { userId: user?.id, method });
+      
+      // Processar pagamento automaticamente
+      if (response.data.paymentUrl) {
+        console.log("Processing payment...");
+        const paymentUrl = response.data.paymentUrl;
+        // Extrair o paymentId da URL
+        // Formato: http://localhost:3000/api/payments/callback/pay_123?method=credit_card
+        const paymentIdMatch = paymentUrl.match(/callback\/(pay_\d+)/);
+        if (paymentIdMatch && paymentIdMatch[1]) {
+          const paymentId = paymentIdMatch[1];
+          await api.post(`/payments/callback/${paymentId}`);
+        }
+      }
+      
       return response.data;
     },
     onSuccess: (data: any) => {
       console.log("Order placed successfully:", data);
       refetchCart();
-      // Mostrar informações do pedido e URL de pagamento
-      alert(`Pedido criado com sucesso!\nID: ${data.order.id}\nPagamento: ${data.paymentUrl}`);
+      // Mostrar informações do pedido
+      alert(`Pedido criado com sucesso!\nID: ${data.order.id}\nStatus: Pago`);
       navigate("/profile");
     },
     onError: (error: any) => {
