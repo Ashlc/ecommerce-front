@@ -31,7 +31,7 @@ type CheckoutFormValues = {
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { cart, refetchCart, user } = useUser();
+  const { cart, refetchAll, user } = useUser();
   const [method, setMethod] = useState<PaymentMethod>("credit_card");
   const [total, setTotal] = useState({
     productTotal: 0,
@@ -78,7 +78,7 @@ const CheckoutPage = () => {
       await api.post("/orders/place", { userId: user?.id, method });
     },
     onSuccess: () => {
-      refetchCart();
+      refetchAll();
       navigate("/profile");
     },
   });

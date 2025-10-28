@@ -1,10 +1,24 @@
+import { useUser } from "@/hooks/useUser";
 import { IOrder } from "@/interfaces";
+import api from "@/services/api";
 import { formatDate, getOrderStatusColor } from "@/services/helpers";
+import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
-import { Modal, ModalBody, ModalContent, ModalHeader } from "@heroui/modal";
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+} from "@heroui/modal";
 import { Skeleton } from "@heroui/skeleton";
-import { CalendarBlankIcon, ReceiptIcon } from "@phosphor-icons/react";
+import {
+  ArrowsClockwiseIcon,
+  CalendarBlankIcon,
+  ReceiptIcon,
+} from "@phosphor-icons/react";
+import { useMutation } from "@tanstack/react-query";
 
 type Props = {
   order?: IOrder;
@@ -13,6 +27,20 @@ type Props = {
 };
 
 const OrderDetailsModal = ({ order, isOpen, onClose }: Props) => {
+  const { refetchOrders } = useUser();
+  const { mutate: processPayment, isPending } = useMutation({
+    mutationFn: async () => {
+      if (!order) return;
+      await api.post(`/payments/process/`, {
+        orderId: order.id,
+        method: "credit_card",
+      });
+    },
+    onSuccess: () => {
+      onClose();
+      refetchOrders();
+    },
+  });
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <ModalContent>
@@ -26,7 +54,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose }: Props) => {
                 </span>
               </div>
             </ModalHeader>
-            <ModalBody className="gap-4 pb-8">
+            <ModalBody className="gap-4">
               <div className="flex justify-between items-center">
                 <Chip
                   className="capitalize"
@@ -95,6 +123,16 @@ const OrderDetailsModal = ({ order, isOpen, onClose }: Props) => {
                 </div>
               )}
             </ModalBody>
+            <ModalFooter>
+              <Button
+                onPress={() => processPayment()}
+                color="primary"
+                endContent={<ArrowsClockwiseIcon size={18} />}
+                isLoading={isPending}
+              >
+                Process payment
+              </Button>
+            </ModalFooter>
           </>
         ) : (
           <Skeleton>

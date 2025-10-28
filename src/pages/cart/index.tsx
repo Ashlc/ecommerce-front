@@ -1,6 +1,6 @@
 import PageTitle from "@/components/page-title";
 import CartedProduct from "@/components/products/carted-product";
-import { useCart } from "@/hooks/useCart";
+import { useUser } from "@/hooks/useUser";
 import { ICartItem } from "@/interfaces";
 import { calculateShipping, calculateTotal } from "@/services/helpers";
 import { Button } from "@heroui/button";
@@ -20,10 +20,9 @@ import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [checkoutItems, setCheckoutItems] = useState<Set<ICartItem>>(new Set());
   const [shipping, setShipping] = useState(0);
   const [zipCode, setZipCode] = useState("");
-  const { cart, removeFromCart, isRemovingFromCart } = useCart();
+  const { cart, removeFromCart } = useUser();
   const [total, setTotal] = useState({
     productTotal: 0,
     taxes: 0,
@@ -44,7 +43,7 @@ const CartPage = () => {
 
   useEffect(() => {
     handleTotals();
-  }, [checkoutItems, shipping]);
+  }, [cart, shipping]);
 
   const onSubmit = () => {
     navigate("/checkout");

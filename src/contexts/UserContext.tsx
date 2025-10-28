@@ -32,6 +32,7 @@ export interface UserContextType {
   orders: IOrder[];
   isLoadingOrders: boolean;
   refetchOrders: () => Promise<QueryObserverResult<IOrder[], Error>>;
+  refetchAll: () => void;
 }
 
 export const UserContext = createContext<UserContextType | undefined>(
@@ -117,6 +118,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     enabled: !!userId, // Only fetch when userId exists
   });
 
+  const refetchAll = () => {
+    refetchCart();
+    refetchOrders();
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -133,6 +139,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         orders,
         isLoadingOrders,
         refetchOrders,
+        refetchAll,
       }}
     >
       {children}
