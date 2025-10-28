@@ -21,7 +21,7 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      const res = await api.get<IUser[]>("/api/users");
+      const res = await api.get<IUser[]>("/users");
       const user = res.data.find((u: IUser) => u.email === email);
 
       if (!user) {
