@@ -33,7 +33,7 @@ const LoginPage = () => {
       setUserId(user.id);
       localStorage.setItem("userId", user.id);
       localStorage.setItem("_auth", "dummy_token");
-      navigate("/");
+      navigate("/home");
     } catch (err) {
       addToast({
         title: "We couldn't log you in. Try again?",
@@ -45,14 +45,9 @@ const LoginPage = () => {
   };
 
   const handleQuickLogin = () => {
-    setIsLoading(true);
-    setUserId("cmh9skt4t000huh9wwlxv70rn");
-    localStorage.setItem("userId", "cmh9skt4t000huh9wwlxv70rn");
-    localStorage.setItem("_auth", "dummy_token");
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate("/");
-    }, 600);
+    // Preencher os campos de email e senha
+    setEmail("joao@teste.com");
+    setPassword("senha123");
   };
 
   return (

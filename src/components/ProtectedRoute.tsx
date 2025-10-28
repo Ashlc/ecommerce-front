@@ -9,7 +9,7 @@ export const ProtectedRoute = () => {
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     if (!userId && !storedUserId) {
-      navigate("/login");
+      navigate("/");
     }
   }, [userId, navigate]);
 

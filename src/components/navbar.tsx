@@ -29,7 +29,7 @@ export const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("userId");
     localStorage.removeItem("_auth");
-    navigate("/login");
+    navigate("/");
   };
   const searchInput = (
     <Input
@@ -54,7 +54,7 @@ export const Navbar = () => {
           <Link
             className="flex justify-start items-center gap-1 font-heading font-medium text-primary"
             color="foreground"
-            href="/"
+            href="/home"
           >
             iShop
             <ShoppingCartIcon className="w-6 h-6" weight="duotone" />

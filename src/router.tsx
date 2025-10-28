@@ -13,11 +13,15 @@ export const routes = [
     element: <App />,
     children: [
       {
+        path: "/",
+        element: <LoginPage />,
+      },
+      {
         path: "/login",
         element: <LoginPage />,
       },
       {
-        path: "/",
+        path: "/home",
         element: <IndexPage />,
       },
       {
