@@ -28,12 +28,22 @@ type Props = {
 
 const OrderDetailsModal = ({ order, isOpen, onClose }: Props) => {
   const { refetchOrders } = useUser();
-  const { mutate: processPayment, isPending } = useMutation({
+
+  const handleUpdate = () => {
+    switch (order?.status) {
+      case "pending":
+        return "shipped";
+      case "shipped":
+        return "delivered";
+      default:
+        return order?.status;
+    }
+  };
+  const { mutate: updateOrder, isPending } = useMutation({
     mutationFn: async () => {
       if (!order) return;
-      await api.post(`/payments/process/`, {
-        orderId: order.id,
-        method: "credit_card",
+      await api.put(`/orders/${order.id}/`, {
+        status: handleUpdate(),
       });
     },
     onSuccess: () => {
@@ -124,14 +134,16 @@ const OrderDetailsModal = ({ order, isOpen, onClose }: Props) => {
               )}
             </ModalBody>
             <ModalFooter>
-              <Button
-                onPress={() => processPayment()}
-                color="primary"
-                endContent={<ArrowsClockwiseIcon size={18} />}
-                isLoading={isPending}
-              >
-                Process payment
-              </Button>
+              {order.status !== "delivered" && (
+                <Button
+                  onPress={() => updateOrder()}
+                  color="primary"
+                  endContent={<ArrowsClockwiseIcon size={18} />}
+                  isLoading={isPending}
+                >
+                  Update
+                </Button>
+              )}
             </ModalFooter>
           </>
         ) : (
