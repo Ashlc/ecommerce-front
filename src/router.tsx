@@ -7,6 +7,7 @@ import CheckoutPage from "./pages/checkout";
 import LoginPage from "./pages/login";
 import ProductPage from "./pages/products";
 import ProfilePage from "./pages/profile";
+import RecommendationsPage from "./pages/recommendations";
 
 export const routes = [
   {
@@ -19,6 +20,10 @@ export const routes = [
       {
         path: "/",
         element: <IndexPage />,
+      },
+      {
+        path: "/recommendations",
+        element: <RecommendationsPage />,
       },
       {
         path: "/products/:id",
