@@ -1,4 +1,4 @@
-import { ICartItem } from "@/interfaces";
+import { IAddress, ICartItem } from "@/interfaces";
 import { OrderStatus } from "@/types";
 
 const getOrderStatusColor = (status: OrderStatus) => {
@@ -78,12 +78,79 @@ const calculateTotal = (cart: ICartItem[]) => {
   return { productTotal, taxes, shipping: 10, grandTotal };
 };
 
-const calculateShipping = (zipCode: string) => {
-  const zipCodeNum = parseInt(zipCode, 10);
-  if (zipCodeNum) {
-    return Math.floor(zipCodeNum * 0.000001);
+const calculateShippingCost = (address: Partial<IAddress>): number => {
+  if (!address.state || !address.city || !address.zipCode) {
+    console.error("Incomplete address for shipping calculation");
+    return 0;
   }
-  return 0;
+
+  // Simular cálculo de frete baseado no estado e CEP
+  let baseCost = 15.99; // Custo base
+
+  // Ajustar custo baseado no estado
+  switch (address.state) {
+    case "SP":
+      baseCost = 12.99; // São Paulo - mais barato
+      break;
+    case "RJ":
+      baseCost = 14.99; // Rio de Janeiro
+      break;
+    case "MG":
+      baseCost = 16.99; // Minas Gerais
+      break;
+    case "RS":
+    case "SC":
+    case "PR":
+      baseCost = 18.99; // Sul - mais caro
+      break;
+    case "AM":
+    case "AC":
+    case "RO":
+    case "RR":
+    case "AP":
+      baseCost = 25.99; // Norte - mais caro
+      break;
+    default:
+      baseCost = 19.99; // Outros estados
+  }
+
+  // Ajustar baseado no CEP (simulação)
+  const zipCode = address.zipCode.replace(/\D/g, "");
+  if (zipCode.startsWith("01") || zipCode.startsWith("02")) {
+    baseCost += 5.0; // Zona central - mais caro
+  }
+
+  console.log(
+    `🚚 Custo de frete calculado para ${address.city}/${address.state}: R$ ${baseCost.toFixed(2)}`,
+  );
+  return baseCost;
+};
+
+const calculateShipping = async (zipCode: string) => {
+  try {
+    const address = await fetch(
+      `https://viacep.com.br/ws/${zipCode}/json/`,
+    ).then((res) => res.json());
+
+    console.log(address);
+
+    if (!address.logradouro || !address.uf || !address.localidade) {
+      console.error("Invalid address");
+      return 0;
+    }
+
+    const shippingAddress: Partial<IAddress> = {
+      street: address.logradouro,
+      city: address.localidade,
+      state: address.uf,
+      zipCode: zipCode,
+    };
+
+    return calculateShippingCost(shippingAddress);
+  } catch (error) {
+    console.error("Error calculating shipping:", error);
+    return 0;
+  }
 };
 
 export {

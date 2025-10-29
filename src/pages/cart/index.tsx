@@ -20,9 +20,10 @@ import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [shipping, setShipping] = useState(0);
+  const [shippingCost, setShippingCost] = useState(0);
   const [zipCode, setZipCode] = useState("");
   const { cart, removeFromCart } = useUser();
+  const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState({
     productTotal: 0,
     taxes: 0,
@@ -30,20 +31,24 @@ const CartPage = () => {
   });
   const navigate = useNavigate();
 
-  const handleTotals = () => {
-    const shipping = calculateShipping(zipCode.replace("-", ""));
-    setShipping(shipping);
+  const handleTotals = async () => {
+    setLoading(true);
+    if (zipCode.length === 9) {
+      const shipping = await calculateShipping(zipCode);
+      setShippingCost(shipping);
+    }
     const totals = calculateTotal(cart);
     setTotal({
       productTotal: totals.productTotal,
       taxes: totals.taxes,
-      grandTotal: totals.grandTotal + shipping,
+      grandTotal: totals.grandTotal + shippingCost,
     });
+    setLoading(false);
   };
 
   useEffect(() => {
     handleTotals();
-  }, [cart, shipping]);
+  }, [cart]);
 
   const onSubmit = () => {
     navigate("/checkout");
@@ -152,15 +157,16 @@ const CartPage = () => {
               </InputMask>
               <Button
                 color="primary"
-                size="lg"
-                onPress={() => calculateShipping(zipCode)}
+                onPress={() => handleTotals()}
+                className="h-12 px-8"
+                isLoading={loading}
               >
                 Calculate
               </Button>
             </div>
             <div className="flex flex-row justify-between w-full gap-4 mt-4 p-4 border border-default-200 rounded-xl bg-default-50">
               <span>Estimated Shipping:</span>
-              <span className="font-bold">${shipping.toFixed(2)}</span>
+              <span className="font-bold">${shippingCost.toFixed(2)}</span>
             </div>
           </div>
           <div className="flex flex-row justify-between w-full gap-4 border-y py-4 border-default-200">

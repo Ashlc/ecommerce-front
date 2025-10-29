@@ -215,7 +215,7 @@ const CheckoutPage = () => {
                     {...field}
                     isInvalid={!!fieldState.error}
                     errorMessage={fieldState.error?.message}
-                    className="col-span-3"
+                    className="col-span-1"
                   />
                 )}
               />
@@ -242,21 +242,6 @@ const CheckoutPage = () => {
                   <Input
                     label="City"
                     placeholder="New York"
-                    {...field}
-                    isInvalid={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                    className="col-span-2"
-                  />
-                )}
-              />
-              <Controller
-                name="district"
-                control={control}
-                rules={{ required: "District is required" }}
-                render={({ field, fieldState }) => (
-                  <Input
-                    label="District"
-                    placeholder="Downtown"
                     {...field}
                     isInvalid={!!fieldState.error}
                     errorMessage={fieldState.error?.message}
