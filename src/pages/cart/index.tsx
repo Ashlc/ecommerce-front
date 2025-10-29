@@ -33,8 +33,9 @@ const CartPage = () => {
 
   const handleTotals = async () => {
     setLoading(true);
+    let shipping = 0;
     if (zipCode.length === 9) {
-      const shipping = await calculateShipping(zipCode);
+      shipping = await calculateShipping(zipCode);
       setShippingCost(shipping);
     }
     const totals = calculateTotal(cart);
